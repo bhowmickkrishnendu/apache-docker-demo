@@ -1,0 +1,41 @@
+// This is a static web app k8s cluster deployment jenkins script.
+// This script is Writtent by Krishnendu Bhowmick
+node{
+    
+    def buildnumber = BUILD_NUMBER
+    
+    stage("Git Clone")
+    {
+        git url:'https://github.com/bhowmickkrishnendu/apache-docker-demo.git'
+    }
+    stage('Docker Old unused image clean')
+    {
+        sh "docker system prune -f --all"
+    }
+    stage('Docker Build Image')
+    {
+        sh "docker build -t krishhub/apachetest:${buildnumber} ."
+    }
+    // Docker Pipeline plugin used here.
+    stage('Push Image to Repository')
+    {
+        withDockerRegistry(credentialsId: 'e4bc5573-0aca-4b3e-baf2-bdcea34268fe') {
+        sh "docker push krishhub/apachetest:${buildnumber}"
+        }
+    }
+        stage('Update the build tag in k8s deployment')
+    {
+    sh "chmod +x changebuildtag.sh"
+    sh "./changebuildtag.sh ${buildnumber}"
+    }
+    //SSH Pipeline Agent plugin used.
+    stage('Deploy app on K8s Cluster')
+    {
+        sshagent(['k8s_server']) 
+        {
+            sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.34.225"
+            sh "scp -o StrictHostKeyChecking=no deploy-apacheapp.yml ubuntu@172.31.34.225:/home/ubuntu/"
+            sh "ssh ubuntu@172.31.34.225 kubectl apply -f deploy-apacheapp.yml"
+        }
+    }
+}
