@@ -1,2 +1,2 @@
 #!/bin/bash
-sed "s/tagVersion/$1/g" deploy.yml > deploy.yml
+sed "s/tagVersion/$1/g" deploy.yml > deploy-apacheapp.yml
