@@ -1,5 +1,5 @@
 // This is a static web app k8s cluster deployment jenkins script.
-// This script is Writtent by Krishnendu Bhowmick
+// This script is Writen by Krishnendu Bhowmick
 node{
     
     def buildnumber = BUILD_NUMBER
